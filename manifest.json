@@ -1,0 +1,18 @@
+{
+  "author": {
+    "name": "Mark Wainwright",
+    "email": "mark@unbounce.com"
+  },
+  "frameworkVersion": "1.0",
+  "location": "ticket_sidebar",
+  "defaultLocale": "en",
+  "private": true,
+  "version": "0.1",
+  "parameters": [
+    {
+      "name": "intercomAppID",
+      "type": "text",
+      "required": true
+    }
+  ]
+}

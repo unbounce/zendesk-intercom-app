@@ -1,0 +1,5 @@
+<div class="intercom">
+  <a href="https://www.intercom.io/apps/{{intercomAppID}}/users/show?email={{email}}" target="_blank" class="btn">
+    {{name}} on Intercom<i class="icon-arrow-right icon"></i>
+  </a>
+</div>
