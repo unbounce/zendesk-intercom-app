@@ -1,4 +1,5 @@
 <header>
+  <span class="logo"></span>
   <h3>Intercom</h3>
 </header>
 
