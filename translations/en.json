@@ -1,5 +1,6 @@
 {
   "app": {
-   "description": "Link to a customer's Intercom profile"
+    "name": "Intercom",
+    "description": "Link to ticket requester's Intercom profile"
   }
 }
