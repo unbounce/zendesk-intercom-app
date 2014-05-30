@@ -1,0 +1,15 @@
+dl dt{
+  clear: left;
+  float: left;
+  max-width: 9em;
+  color: #8F8F8F;
+  font-weight: normal;
+}
+
+dl dd{
+  margin-left: 10em;
+}
+
+.btn{
+  margin: 2px 0 14px 0;
+}

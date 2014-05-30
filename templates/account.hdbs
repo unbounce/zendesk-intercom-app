@@ -1,3 +1,9 @@
 <a href="{{link}}" target="_blank" class="btn">
     {{name}} on Intercom <i class="icon-arrow-right icon"></i>
 </a>
+<dl>
+  {{#metadata}}
+    <dt>{{field}}</dt>
+    <dd>{{data}}</dd>
+  {{/metadata}}
+</dl>
