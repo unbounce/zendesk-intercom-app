@@ -53,7 +53,7 @@
 
         // Metadata fields to grab from Intercom
         var fields = ['marketer', 'pages', 'domains', 'clients', 'api keys',
-          'session count'];
+          'session_count'];
 
         // Store those fields in array
         var metadata = [];
@@ -70,7 +70,7 @@
             }
 
             metadata.push({
-              field : fields[i].toTitleCase(),
+              field : fields[i].replace(/_/g, ' ').toTitleCase(),
               data : data.custom_data[ fields[i] ]
             });
           }
