@@ -1,5 +1,6 @@
 <p>No Intercom account found for the email address <em>{{email}}</em></p>
 <br />
-<a href="{{link}}" target="_blank" class="btn">
-    Go to Intercom <i class="icon-arrow-right icon"></i>
-</a>
+<form name="search-form" id="search-form" method="GET" target="_blank">
+  <input id="search-field" type="text" placeholder="Search Intercom..." />
+  <input type="button" id="search-button" value="Go &gt;" />
+</form>
