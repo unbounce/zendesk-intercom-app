@@ -25,7 +25,8 @@
 
     getUser: function () {
       return {
-        url: 'https://{{setting.intercomAppID}}:{{setting.intercomAPIKey}}@api.intercom.io/v1/users/?email=' + this.ticket().requester().email(),
+        url: 'https://{{setting.intercomAppID}}:{{setting.intercomAPIKey}}@api.intercom.io/' +
+             'users/?email=' + this.ticket().requester().email(),
         type: 'GET',
         dataType: 'json',
         secure: true
@@ -43,35 +44,37 @@
           metadata: []
         });
 
-        // Make the API call (debug)
+        // Make the API call
         this.ajax('getUser');
       },
 
       'getUser.done': function(data) {
+        console.log('Data from Intercom:', data);
+
         if (!data.user_id) return false;
-        console.log(data);
 
         // Metadata fields to grab from Intercom
-        var fields = ['marketer', 'pages', 'domains', 'clients', 'api keys',
-          'session_count'];
+        var fields = ['phone', 'marketer', 'pages', 'domains', 'clients',
+                      'api keys'];
 
         // Store those fields in array
         var metadata = [];
         for ( var i = 0 ; i < fields.length ; i ++ ){
-          if ( data.custom_data[ fields[i] ] || data.custom_data[ fields[i] ] === 0 ) {
+          if ( data.custom_attributes[ fields[i] ] || data.custom_attributes[ fields[i] ] === 0 ){
 
             // Custom data displays
             if ( fields[i] === 'pages' ) {
-              data.custom_data[ fields[i] ] = data.custom_data[ fields[i] ] + ' (' + data.custom_data['published pages'] + ' published)';
+              data.custom_attributes[ fields[i] ] = data.custom_attributes[ fields[i] ] +
+                                                    ' (' + data.custom_attributes['published pages'] + ' published)';
             }
 
             if ( fields[i] === 'marketer' ) {
-              data.custom_data[ fields[i] ] = data.custom_data[ fields[i] ].toTitleCase();
+              data.custom_attributes[ fields[i] ] = data.custom_attributes[ fields[i] ].toTitleCase();
             }
 
             metadata.push({
               field : fields[i].replace(/_/g, ' ').toTitleCase(),
-              data : data.custom_data[ fields[i] ]
+              data : data.custom_attributes[ fields[i] ]
             });
           }
         }

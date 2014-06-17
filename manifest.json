@@ -7,7 +7,7 @@
   "location": "ticket_sidebar",
   "defaultLocale": "en",
   "private": true,
-  "version": "0.4",
+  "version": "0.4.1",
   "domainWhitelist": ["api.intercom.io"],
   "parameters": [
     {
