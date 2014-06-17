@@ -1,9 +1,22 @@
 <a href="{{link}}" target="_blank" class="btn">
-    {{name}} on Intercom <i class="icon-arrow-right icon"></i>
+    {{data.user.name}} on Intercom <i class="icon-arrow-right icon"></i>
 </a>
-<dl>
-  {{#metadata}}
+
+<dl id="tags">
+  {{#data.user.tags}}
+    <dd title="{{name}}">{{name}}</dd>
+  {{/data.user.tags}}
+</dl>
+
+<dl id="segments">
+  {{#data.user.segments}}
+    <dd title="{{name}}">{{name}}</dd>
+  {{/data.user.segments}}
+</dl>
+
+<dl id="metadata">
+  {{#data.user.metadata}}
     <dt>{{field}}</dt>
     <dd>{{data}}</dd>
-  {{/metadata}}
+  {{/data.user.metadata}}
 </dl>

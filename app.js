@@ -225,9 +225,7 @@
 
       'allCallsDone': function() {
         if ( !this.data.user || !this.data.tags || !this.data.segments ) return false;
-
         // Callback when all Ajax requests are complete
-        console.log('Data from Intercom:', this.data );
 
         // Get the friendly name of each tag and segment
         var that = this;
@@ -241,21 +239,24 @@
           var segmentName = _.find(that.data.segments, function(segment){
             return segment.id === userSegment.id;
           });
-          if ( segmentName ) {
-            userSegment.name = segmentName.name;
-          }else{
-            delete that.data.user.segments[key];
-          }
+          if ( segmentName ) userSegment.name = segmentName.name;
+        });
+        this.data.user.segments = _.filter(this.data.user.segments, function(segment){
+          return typeof segment.name !== 'undefined';
         });
 
-        console.log('Processed data from Intercom:', this.data );
+        console.log('Data from Intercom:', this.data );
 
+        this.switchTo('account', {
+          link: 'https://app.intercom.io/apps/' + this.setting('intercomAppID') + '/users/show?user_id=' + this.data.user.user_id,
+          data: this.data
+        });
       },
 
       'getUser.fail': function() {
         // Show the 'no account' message
         this.switchTo('no-account', {
-          link: 'https://app.intercom.io/a/apps/' + this.setting('intercomAppID') + '/users/segments/active',
+          link: 'https://app.intercom.io/apps/' + this.setting('intercomAppID') + '/users/segments/active',
           email: this.ticket().requester().email()
         });
       },
