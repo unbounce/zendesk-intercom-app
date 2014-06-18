@@ -89,8 +89,14 @@
         // Show the default button straightaway
         this.switchTo('account', {
           link: 'https://app.intercom.io/apps/' + this.setting('intercomAppID') + '/users/show?email=' + this.ticket().requester().email(),
-          name: this.ticket().requester().name(),
-          metadata: []
+          data: {
+            user: {
+              name: this.ticket().requester().name(),
+              tags: [],
+              segments: [],
+              metadata: []
+            }
+        }
         });
 
         // Make the API calls
@@ -162,10 +168,15 @@
       },
 
       'getUser.fail': function() {
-        // Show the 'no account' message
+        // Show the 'no account' message and search box
         this.switchTo('no-account', {
           link: 'https://app.intercom.io/apps/' + this.setting('intercomAppID') + '/users/segments/active',
-          email: this.ticket().requester().email()
+          data: {
+            user: {
+              email: this.ticket().requester().email(),
+              name: this.ticket().requester().name()
+            }
+          }
         });
       },
     }

@@ -1,4 +1,4 @@
-<p>No Intercom account found for the email address <em>{{email}}</em></p>
+<p>No Intercom account found for the email address <em>{{data.user.email}}</em></p>
 <br />
 <form name="search-form" id="search-form" method="GET" target="_blank">
   <input id="search-field" type="text" placeholder="Search Intercom..." />
