@@ -1,6 +1,6 @@
 <p>No Intercom account found for the email address <em>{{data.user.email}}</em></p>
 <br />
-<form name="search-form" id="search-form" method="GET" target="_blank">
-  <input id="search-field" type="text" placeholder="Search Intercom..." />
-  <input type="button" id="search-button" value="Go &gt;" />
+<form name="search-form" action="https://app.intercom.io/apps/eqe7kbcu/users" method="GET" target="_blank">
+  <input name="search" type="text" value="{{data.user.name}}" />
+  <input type="submit" value="Search Intercom &gt;" />
 </form>
