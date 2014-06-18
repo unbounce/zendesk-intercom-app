@@ -2,16 +2,20 @@
     {{data.user.name}} on Intercom <i class="icon-arrow-right icon"></i>
 </a>
 
-<dl id="tags">
-  {{#data.user.tags}}
-    <dd title="{{name}}">{{name}}</dd>
-  {{/data.user.tags}}
-</dl>
-
 <dl id="segments">
   {{#data.user.segments}}
-    <dd title="{{name}}">{{name}}</dd>
+    <dd>
+      <a href="{{link}}" title="{{name}}">{{name}}</a>
+    </dd>
   {{/data.user.segments}}
+</dl>
+
+<dl id="tags">
+  {{#data.user.tags}}
+    <dd>
+      <a href="{{link}}" title="{{name}}">{{name}}</a>
+    </dd>
+  {{/data.user.tags}}
 </dl>
 
 <dl id="metadata">

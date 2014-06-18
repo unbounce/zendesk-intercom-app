@@ -123,15 +123,27 @@
         if ( !this.data.user || !this.data.tags || !this.data.segments ) return false;
         // Callback when all Ajax requests are complete
 
-        // Get the friendly name of each tag and segment
+        // Loop through user's tags
         var that = this;
         _.each(this.data.user.tags, function(userTag) {
+
+          // Get tag name
           var tagName = _.find(that.data.tags, function(tag){
             return tag.id === userTag.id;
           }).name;
           userTag.name = tagName;
+
+          // Get Intercom link
+          userTag.link = 'https://app.intercom.io/apps/eqe7kbcu/users/?search=tag:' + encodeURI(tagName);
         });
+
+        // Loop through user's segments
         _.each(this.data.user.segments, function(userSegment, key) {
+
+          // Get Intercom link
+          userSegment.link = 'https://app.intercom.io/apps/eqe7kbcu/users/?active_segment=' + userSegment.id;
+
+          // Get segment name
           var segmentName = _.find(that.data.segments, function(segment){
             return segment.id === userSegment.id;
           });
