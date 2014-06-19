@@ -5,7 +5,9 @@
 <dl id="segments">
   {{#app.user.segments}}
     <dd>
-      <a href="{{../app.linkRoot}}/?active_segment={{id}}" title="{{name}}">{{name}}</a>
+      <a href="{{../app.linkRoot}}/?active_segment={{id}}" title="{{name}}">
+        {{name}}
+      </a>
     </dd>
   {{/app.user.segments}}
 </dl>
@@ -13,7 +15,9 @@
 <dl id="tags">
   {{#app.user.tags}}
     <dd>
-      <a href="{{../app.linkRoot}}/?search=tag:{{name}}" title="{{name}}">{{name}}</a>
+      <a href="{{../app.linkRoot}}/?search=tag:{{name}}" title="{{name}}">
+        {{name}}
+      </a>
     </dd>
   {{/app.user.tags}}
 </dl>

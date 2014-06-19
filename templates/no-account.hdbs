@@ -1,5 +1,9 @@
-<p>No Intercom account found for the email address <em>{{app.user.email}}</em></p>
+<p>
+  No Intercom account found for the email address <em>{{app.user.email}}</em>
+</p>
+
 <br />
+
 <form name="search-form" action="{{app.linkRoot}}" method="GET" target="_blank">
   <input name="search" type="text" value="{{app.user.name}}" />
   <input type="submit" value="Search Intercom &gt;" />
