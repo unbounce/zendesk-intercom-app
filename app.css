@@ -17,6 +17,9 @@ dl#metadata dt{
   max-width: 9em;
   color: #8F8F8F;
   font-weight: normal;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 dl#metadata dd{
