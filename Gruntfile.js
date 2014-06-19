@@ -3,6 +3,7 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
 
+    // Lint
     jshint: {
       all: ['app.js'],
       options: {
@@ -17,10 +18,18 @@ module.exports = function(grunt) {
       }
     },
 
+    // Delete old ZIP files
+    clean: {
+      oldBuilds: {
+        src: ['<%= pkg.name %>_*.zip']
+      }
+    },
+    
+    // Create a new ZIP file
     compress: {
-      main: {
+      app: {
         options: {
-          archive: '<%= pkg.name %>_v<%= pkg.version %>_' + new Date().getTime() +'.zip',
+          archive: '<%= pkg.name %>_v<%= pkg.version %>.zip',
           mode: 'zip'
         },
         files: [
@@ -42,8 +51,9 @@ module.exports = function(grunt) {
   });
 
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-compress');
 
-  grunt.registerTask('default', ['jshint', 'compress']);
+  grunt.registerTask('default', ['jshint', 'clean', 'compress']);
 
 };
