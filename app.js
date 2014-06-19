@@ -129,7 +129,7 @@
         // Add tag names to user tags array
         _.each(this.app.user.tags, function(userTag) {
           var globalTag = _.find(self.app.tags, function(tag){
-            return tag.id === userTag.id;
+            return parseInt(tag.id, 10) === parseInt(userTag.id, 10);
           });
           if ( globalTag ) userTag.name = globalTag.name;
         });
