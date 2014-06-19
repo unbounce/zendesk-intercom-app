@@ -18,8 +18,8 @@
     },
     {
       "name": "intercomAPIKey",
-      "type": "text",
-      "required": false,
+      "type": "password",
+      "required": true,
       "secure": true
     }
   ]
