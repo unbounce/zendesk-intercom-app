@@ -5,7 +5,7 @@
 
     return this.replace(/[A-Za-z0-9\u00C0-\u00FF]+[^\s-]*/g, function(match, index, title){
       if (index > 0 && index + match.length !== title.length &&
-        match.search(smallWords) > -1 && title.charAt(index - 2) !== ":" &&
+        match.search(smallWords) > -1 && title.charAt(index - 2) !== ':' &&
         (title.charAt(index + match.length) !== '-' || title.charAt(index - 1) === '-') &&
         title.charAt(index - 1).search(/[^\s-]/) < 0) {
         return match.toLowerCase();
@@ -19,45 +19,60 @@
     });
   };
 
-  return {
+  function IntercomApp(zendeskApp) {
 
-    data: {},
-    apiRoot: 'https://{{setting.intercomAppID}}:{{setting.intercomAPIKey}}@api.intercom.io',
+    // Endpoints
+    this.apiRoot = 'https://{{setting.intercomAppID}}:{{setting.intercomAPIKey}}@api.intercom.io';
+    this.linkRoot = 'https://app.intercom.io/apps/' + zendeskApp.setting('intercomAppID') + '/users';
 
-    filterMetadata: function(data){
-      // Metadata fields to grab from Intercom
-      var fields = ['phone', 'marketer', 'pages', 'domains', 'clients',
-                    'api keys'];
+    // Default user data, until data is returned from the Intercom API
+    this.user = {
+      userID: '',
+      email: zendeskApp.ticket().requester().email(),
+      name: zendeskApp.ticket().requester().name(),
+      link: this.linkRoot + '/show?email=' + zendeskApp.ticket().requester().email(),
+      tags: [],
+      segments: [],
+      metadata: []
+    };
+  }
 
-      // Store those fields in array
-      var metadata = [];
-      for ( var i = 0 ; i < fields.length ; i ++ ){
-        if ( data[ fields[i] ] || data[ fields[i] ] === 0 ){
+  IntercomApp.prototype.filterMetadata = function(data){
+    // Metadata fields to grab from Intercom
+    var fields = ['phone', 'marketer', 'pages', 'domains', 'clients',
+                  'api keys'];
 
-          // Custom data displays
-          if ( fields[i] === 'pages' ) {
-            data[ fields[i] ] = data[ fields[i] ] +
-                                ' (' + data['published pages'] + ' published)';
-          }
+    // Store those fields in array
+    var metadata = [];
+    for ( var i = 0 ; i < fields.length ; i ++ ){
+      if ( data[ fields[i] ] || data[ fields[i] ] === 0 ){
 
-          if ( fields[i] === 'marketer' ) {
-            data[ fields[i] ] = data[ fields[i] ].toTitleCase();
-          }
-
-          metadata.push({
-            field : fields[i].replace(/_/g, ' ').toTitleCase(),
-            data : data[ fields[i] ]
-          });
+        // Custom data displays
+        if ( fields[i] === 'pages' ) {
+          data[ fields[i] ] = data[ fields[i] ] +
+                              ' (' + data['published pages'] + ' published)';
         }
+
+        if ( fields[i] === 'marketer' ) {
+          data[ fields[i] ] = data[ fields[i] ].toTitleCase();
+        }
+
+        metadata.push({
+          field : fields[i].replace(/_/g, ' ').toTitleCase(),
+          data : data[ fields[i] ]
+        });
       }
-      return metadata;
-    },
+    }
+    return metadata;
+  };
+
+  return {
 
     requests: {
 
       getUser: function () {
         return {
-          url: this.apiRoot + '/users/?email=' + this.ticket().requester().email(),
+          url: this.app.apiRoot + '/users/?email=' + this.ticket().requester().email(),
           type: 'GET',
           dataType: 'json',
           secure: true
@@ -66,7 +81,7 @@
 
       getAllTags: function() {
         return {
-          url: this.apiRoot + '/tags',
+          url: this.app.apiRoot + '/tags',
           type: 'GET',
           dataType: 'json',
           secure: true
@@ -75,7 +90,7 @@
 
       getAllSegments: function() {
         return {
-          url: this.apiRoot + '/segments',
+          url: this.app.apiRoot + '/segments',
           type: 'GET',
           dataType: 'json',
           secure: true
@@ -86,18 +101,11 @@
 
     events: {
       'app.activated': function() {
+
+        this.app = new IntercomApp(this);
+
         // Show the default button straightaway
-        this.switchTo('account', {
-          link: 'https://app.intercom.io/apps/' + this.setting('intercomAppID') + '/users/show?email=' + this.ticket().requester().email(),
-          data: {
-            user: {
-              name: this.ticket().requester().name(),
-              tags: [],
-              segments: [],
-              metadata: []
-            }
-        }
-        });
+        this.switchTo('account', { app: this.app });
 
         // Make the API calls
         this.ajax('getUser');
@@ -106,78 +114,72 @@
       },
 
       'getUser.done': function(user) {
-        this.data.user = {};
-        this.data.user.name = user.name;
-        this.data.user.user_id = user.user_id;
-        this.data.user.tags = user.tags.tags;
-        this.data.user.segments = user.segments.segments;
-        this.data.user.metadata = this.filterMetadata(user.custom_attributes);
-        if ( this.data.tags && this.data.segments ) this.trigger('allCallsDone');
+        this.app.user = {
+          name: user.name,
+          email: user.email,
+          userID: user.user_id,
+          tags: user.tags.tags,
+          segments: user.segments.segments,
+          metadata: this.app.filterMetadata(user.custom_attributes)
+        };
+        if ( this.app.tags && this.app.segments ) this.trigger('allCallsDone');
       },
 
       'getAllTags.done': function(tags) {
-        this.data.tags = tags.tags || [];
-        if ( this.data.user && this.data.segments ) this.trigger('allCallsDone');
+        this.app.tags = tags.tags || [];
+        if ( this.app.user.userID && this.app.segments ) this.trigger('allCallsDone');
       },
 
       'getAllSegments.done': function(segments) {
-        this.data.segments = segments.segments || [];
-        if ( this.data.user && this.data.tags ) this.trigger('allCallsDone');
+        this.app.segments = segments.segments || [];
+        if ( this.app.user.userID && this.app.tags ) this.trigger('allCallsDone');
       },
 
+      // Callback when *all* Ajax requests are complete
       'allCallsDone': function() {
-        if ( !this.data.user || !this.data.tags || !this.data.segments ) return false;
-        // Callback when all Ajax requests are complete
+        var that = this;
 
         // Loop through user's tags
-        var that = this;
-        _.each(this.data.user.tags, function(userTag) {
+        _.each(this.app.user.tags, function(userTag) {
 
           // Get tag name
-          var tagName = _.find(that.data.tags, function(tag){
+          var tagName = _.find(that.app.tags, function(tag){
             return tag.id === userTag.id;
           }).name;
           userTag.name = tagName;
 
-          // Get Intercom link
-          userTag.link = 'https://app.intercom.io/apps/eqe7kbcu/users/?search=tag:' + encodeURI(tagName);
+        });
+
+        // Filter out tags that weren't present on the global segment list
+        this.app.user.tags = _.filter(this.app.user.tags, function(tag){
+          return typeof tag.name !== 'undefined';
         });
 
         // Loop through user's segments
-        _.each(this.data.user.segments, function(userSegment, key) {
-
-          // Get Intercom link
-          userSegment.link = 'https://app.intercom.io/apps/eqe7kbcu/users/?active_segment=' + userSegment.id;
+        _.each(this.app.user.segments, function(userSegment, key) {
 
           // Get segment name
-          var segmentName = _.find(that.data.segments, function(segment){
+          var segmentName = _.find(that.app.segments, function(segment){
             return segment.id === userSegment.id;
           });
           if ( segmentName ) userSegment.name = segmentName.name;
         });
-        this.data.user.segments = _.filter(this.data.user.segments, function(segment){
+
+        // Filter out segments that weren't present on the global segment list
+        this.app.user.segments = _.filter(this.app.user.segments, function(segment){
           return typeof segment.name !== 'undefined';
         });
 
-        console.log('Data from Intercom:', this.data );
+        console.log( this.app );
 
-        this.switchTo('account', {
-          link: 'https://app.intercom.io/apps/' + this.setting('intercomAppID') + '/users/show?user_id=' + this.data.user.user_id,
-          data: this.data
-        });
+        this.switchTo('account', { app: this.app });
       },
 
       'getUser.fail': function() {
         // Show the 'no account' message and search box
-        this.switchTo('no-account', {
-          link: 'https://app.intercom.io/apps/' + this.setting('intercomAppID') + '/users/segments/active',
-          data: {
-            user: {
-              email: this.ticket().requester().email(),
-              name: this.ticket().requester().name()
-            }
-          }
-        });
+        console.log('No Intercom user found');
+        this.app.user.link = this.app.linkRoot + '/segments/active';
+        this.switchTo('no-account', { app: this.app });
       },
     }
 
