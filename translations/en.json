@@ -1,6 +1,15 @@
 {
   "app": {
     "name": "Intercom",
-    "description": "Link to ticket requester's Intercom profile"
+    "description": "A Zendesk app (widget) that links to the ticket requester's Intercom.io profile and displays their name, metadata (custom attributes), segments, and tags.",
+    "parameters": {
+      "intercomAppID": {
+        "label": "Intercom App ID"
+      },
+      "intercomAPIKey": {
+        "label": "Intercom API Key",
+        "helpText": "Stored securely and never visible to non-admin agents."
+      }
+    }
   }
 }
