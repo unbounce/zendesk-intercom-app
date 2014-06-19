@@ -37,6 +37,8 @@ module.exports = function(grunt) {
             expand: true,
             src: [
               '**',
+              'README.md',
+              '!assets/screenshot.png',
               '!package.json',
               '!Gruntfile.js',
               '!*.zip',
