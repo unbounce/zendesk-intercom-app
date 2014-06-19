@@ -25,7 +25,6 @@
       userID: '',
       name: zendeskApp.ticket().requester().name(),
       email: zendeskApp.ticket().requester().email(),
-      link: this.linkRoot + '/show?email=' + zendeskApp.ticket().requester().email(),
       tags: [],
       segments: [],
       metadata: []
@@ -55,49 +54,44 @@
     return metadata;
   };
 
+  IntercomApp.prototype.ajaxParams = function(url) {
+    return {
+      url: this.app.apiRoot + url,
+      type: 'GET',
+      dataType: 'json',
+      secure: true
+    };
+  };
+  
   return {
 
     requests: {  // API call parameters
       
-      getUser: function () {
-        return {
-          url: this.app.apiRoot + '/users/?email=' + this.ticket().requester().email(),
-          type: 'GET',
-          dataType: 'json',
-          secure: true
-        };
+      getUser: function() {
+        return this.app.ajaxParams( '/users/?email=' + this.ticket().requester().email() );
       },
 
-      getAllTags: function() {
-        return {
-          url: this.app.apiRoot + '/tags',
-          type: 'GET',
-          dataType: 'json',
-          secure: true
-        };
+      getTags: function() {
+        return this.app.ajaxParams( '/tags' );
       },
 
-      getAllSegments: function() {
-        return {
-          url: this.app.apiRoot + '/segments',
-          type: 'GET',
-          dataType: 'json',
-          secure: true
-        };
+      getSegments: function() {
+        return this.app.ajaxParams( '/segments' );
       }
 
     },
 
     events: {
       
-      'app.activated': function() { // Runs on load
+      'app.activated': function() {
+        // Runs on load. Instantiate our object and show our default view
         this.app = new IntercomApp(this);
         this.switchTo('account', { app: this.app });
 
-        // Make the API calls
+        // Make the API calls asynchronously
         this.ajax('getUser');
-        this.ajax('getAllTags');
-        this.ajax('getAllSegments');
+        this.ajax('getTags');
+        this.ajax('getSegments');
       },
 
       'getUser.done': function(user) {
@@ -112,12 +106,12 @@
         this.trigger('oneCallDone');
       },
 
-      'getAllTags.done': function(tags) {
+      'getTags.done': function(tags) {
         this.app.tags = tags.tags || [];
         this.trigger('oneCallDone');
       },
 
-      'getAllSegments.done': function(segments) {
+      'getSegments.done': function(segments) {
         this.app.segments = segments.segments || [];
         this.trigger('oneCallDone');
       },
@@ -129,10 +123,10 @@
       
       'allCallsDone': function() {
         // Callback when *all* Ajax requests are complete
-        
+
         var self = this;
 
-        // Get tag names
+        // Add tag names to user tags array
         _.each(this.app.user.tags, function(userTag) {
           var globalTag = _.find(self.app.tags, function(tag){
             return tag.id === userTag.id;
@@ -145,7 +139,7 @@
           return typeof tag.name !== 'undefined';
         });
 
-        // Get segment names
+        // Add segment names to user segments array
         _.each(this.app.user.segments, function(userSegment, key) {
           var globalSegment = _.find(self.app.segments, function(segment){
             return segment.id === userSegment.id;
@@ -159,12 +153,12 @@
         });
 
         console.log( this.app );
+        
         this.switchTo('account', { app: this.app });
       },
 
       'getUser.fail': function() {
         // Show the 'no account' message and search box
-        this.app.user.link = this.app.linkRoot + '/segments/active';
         this.switchTo('no-account', { app: this.app });
       },
     }
