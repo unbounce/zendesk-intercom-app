@@ -29,44 +29,46 @@
       segments: [],
       metadata: []
     };
+
   }
+
+  IntercomApp.prototype.ajaxParams = function(url) {
+    return {
+      url: this.apiRoot + url,
+      type: 'GET',
+      dataType: 'json',
+      secure: true
+    };
+  };
 
   IntercomApp.prototype.filterMetadata = function(data){
     // Intercom metadata fields to display
-    var fields = ['phone', 'marketer', 'pages', 'domains', 'clients',
-                  'api keys'];
+    var fields = ['phone', 'marketer', 'current LP solution', 'pages', 'domains',
+                    'clients', 'api keys'];
 
     // Store those fields in array
     var metadata = [];
     _.each(fields, function(field){
-      if ( data[field] || data[field] === 0 ) {
+      var value = data[field];
+      if ( value || value === 0 ) {
 
         // Custom field displays
-        if ( field === 'pages' ) field = field + ' (' + data['published pages'] + ' published)';
-        if ( fields === 'marketer' ) field = field.toTitleCase();
+        if ( field === 'pages' ) value = value + ' (' + data['published pages'] + ' published)';
+        if ( field === 'marketer' ) value = value.toTitleCase();
 
         metadata.push({
-          field : field.replace(/_/g, ' ').toTitleCase(),
-          data : data[fields]
+          field: field.replace(/_/g, ' ').toTitleCase(),
+          value: value
         });
       }
     });
     return metadata;
   };
 
-  IntercomApp.prototype.ajaxParams = function(url) {
-    return {
-      url: this.app.apiRoot + url,
-      type: 'GET',
-      dataType: 'json',
-      secure: true
-    };
-  };
-  
   return {
 
     requests: {  // API call parameters
-      
+
       getUser: function() {
         return this.app.ajaxParams( '/users/?email=' + this.ticket().requester().email() );
       },
@@ -82,7 +84,7 @@
     },
 
     events: {
-      
+
       'app.activated': function() {
         // Runs on load. Instantiate our object and show our default view
         this.app = new IntercomApp(this);
@@ -97,7 +99,7 @@
       'getUser.done': function(user) {
         this.app.user = {
           userID: user.user_id,
-          name: user.name,
+          name: user.name.toTitleCase(),
           email: user.email,
           tags: user.tags.tags,
           segments: user.segments.segments,
@@ -120,7 +122,7 @@
         if ( this.app.user.userID && this.app.tags && this.app.segments)
           this.trigger('allCallsDone');
       },
-      
+
       'allCallsDone': function() {
         // Callback when *all* Ajax requests are complete
 
@@ -153,7 +155,7 @@
         });
 
         console.log( this.app );
-        
+
         this.switchTo('account', { app: this.app });
       },
 

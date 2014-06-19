@@ -25,6 +25,6 @@
 <dl id="metadata">
   {{#app.user.metadata}}
     <dt>{{field}}</dt>
-    <dd>{{data}}</dd>
+    <dd>{{value}}</dd>
   {{/app.user.metadata}}
 </dl>
