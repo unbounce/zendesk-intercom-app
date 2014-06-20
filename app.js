@@ -104,19 +104,17 @@
       },
 
       addTag: function() {
-        var params = {
+        if ( this.app.user.newTagID ) return {
           url: this.app.apiRoot + '/tags',
           type: 'POST',
           dataType: 'json',
           contentType: 'application/json',
           secure: true,
           data: JSON.stringify({
-            id: this.app.user.newTag,
+            id: this.app.user.newTagID,
             users: [ { user_id: this.app.user.userID } ]
           })
         };
-        console.log(params);
-        if ( this.app.user.newTag ) return params;
       }
 
     },
@@ -199,7 +197,6 @@
         this.switchTo('no-account', { app: this.app });
       },
 
-        console.log('New tag to be added', this.app.user.newTag);
       'change #new-tag': function() {
         var newTagID = this.$('#new-tag').val();
 

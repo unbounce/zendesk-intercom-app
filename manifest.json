@@ -9,7 +9,7 @@
   "defaultLocale": "en",
   "private": true,
   "version": "0.6",
-  "domainWhitelist": ["api.intercom.io", "requestb.in"],
+  "domainWhitelist": ["api.intercom.io"],
   "parameters": [
     {
       "name": "intercomAppID",
