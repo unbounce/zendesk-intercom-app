@@ -79,6 +79,22 @@
 
       getSegments: function() {
         return this.app.ajaxParams( '/segments' );
+      },
+
+      addTag: function() {
+        var params = {
+          url: this.app.apiRoot + '/tags',
+          type: 'POST',
+          dataType: 'json',
+          contentType: 'application/json',
+          secure: true,
+          data: JSON.stringify({
+            id: this.app.user.newTag,
+            users: [ { user_id: this.app.user.userID } ]
+          })
+        };
+        console.log(params);
+        if ( this.app.user.newTag ) return params;
       }
 
     },
@@ -163,6 +179,31 @@
         // Show the 'no account' message and search box
         this.switchTo('no-account', { app: this.app });
       },
+
+      'change #add-tag': function() {
+        services.notify('Adding tag...');
+        if ( !this.$('#new-tag').val() || this.$('#new-tag').val() === 'none' ) return false;
+        this.app.user.newTag = this.$('#new-tag').val();
+        console.log('New tag to be added', this.app.user.newTag);
+        this.ajax('addTag');
+      },
+
+      'addTag.done': function(data) {
+        // Fail
+        if ( data.errors ) return this.trigger('addTag.fail');
+
+        // Success
+        services.notify('Successfully added tag ' + this.app.user.newTag + ' to ' + this.app.user.name);
+        this.trigger('app.activated');
+
+        // Cleanup
+        this.$('#new-tag').val('none');
+        delete this.app.user.newTag;
+      },
+
+      'addTag.fail': function() {
+        services.notify('Failed to add tag to ' + this.app.user.name);
+      }
     }
 
   };

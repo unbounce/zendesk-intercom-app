@@ -3,7 +3,8 @@ dl#segments{
   margin-left: -3px;
 }
 
-dl#metadata{
+dl#metadata,
+div#add-tag{
   clear: both;
   padding-top: 5px;
 }
@@ -20,6 +21,10 @@ dl#metadata dt{
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+div#add-tag select{
+  max-width: 100%;
 }
 
 dl#metadata dd{

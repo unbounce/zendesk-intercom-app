@@ -8,8 +8,8 @@
   "location": "ticket_sidebar",
   "defaultLocale": "en",
   "private": true,
-  "version": "0.5.2",
-  "domainWhitelist": ["api.intercom.io"],
+  "version": "0.6",
+  "domainWhitelist": ["api.intercom.io", "requestb.in"],
   "parameters": [
     {
       "name": "intercomAppID",
