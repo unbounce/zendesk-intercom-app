@@ -5,6 +5,8 @@
 <br />
 
 <form name="search-form" action="{{app.linkRoot}}" method="GET" target="_blank">
-  <input name="search" type="text" value="{{app.user.name}}" />
-  <input type="submit" value="Search Intercom &gt;" />
+  <input name="search" id="search-field" type="text" value="{{app.user.name}}" placeholder="Search Intercom..." />
+  <button type="submit" class="btn btn-large btn-primary pull-right">
+    <i class="icon-search icon-white"></i>
+  </button>
 </form>
