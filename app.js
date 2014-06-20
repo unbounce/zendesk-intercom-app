@@ -2,7 +2,7 @@
 
   String.prototype.toTitleCase = function() {
     var smallWords = /^(a|an|and|as|at|but|by|en|for|if|in|nor|of|on|or|per|the|to|vs?\.?|via)$/i;
-    return this.replace(/[A-Za-z0-9\u00C0-\u00FF]+[^\s-]*/g, function(match, index, title){
+    return this.replace(/[A-Za-z0-9\u00C0-\u00FF]+[^\s-]*/g, function(match, index, title) {
       if (index > 0 && index + match.length !== title.length &&
         match.search(smallWords) > -1 && title.charAt(index - 2) !== ':' &&
         (title.charAt(index + match.length) !== '-' || title.charAt(index - 1) === '-') &&
@@ -16,21 +16,11 @@
 
   function IntercomApp(zd) {
     this.zd = zd;
+    this.user = {};
 
     // Endpoints
     this.apiRoot = 'https://{{setting.intercomAppID}}:{{setting.intercomAPIKey}}@api.intercom.io';
     this.linkRoot = 'https://app.intercom.io/apps/' + zd.setting('intercomAppID') + '/users';
-
-    // Default user data – used until actual data is returned from Intercom
-    this.user = {
-      userID: '',
-      name: zd.ticket().requester().name(),
-      email: zd.ticket().requester().email(),
-      tags: [],
-      segments: [],
-      metadata: []
-    };
-
   }
 
   IntercomApp.prototype.ajaxParams = function(url) {
@@ -53,14 +43,14 @@
     this.zd.ajax('addTagRequest');
   };
 
-  IntercomApp.prototype.filterMetadata = function(data){
+  IntercomApp.prototype.filterMetadata = function(data) {
     // Intercom metadata fields to display
     var fields = ['phone', 'marketer', 'current LP solution', 'pages', 'domains',
                     'clients', 'api keys'];
 
     // Store those fields in array
     var metadata = [];
-    _.each(fields, function(field){
+    _.each(fields, function(field) {
       var value = data[field];
       if ( value || value === 0 ) {
 
@@ -78,7 +68,7 @@
   };
 
   IntercomApp.prototype.getTagName = function(searchID) {
-    var globalTag = _.find(this.tags, function(tag){
+    var globalTag = _.find(this.tags, function(tag) {
       return parseInt(tag.id, 10) === parseInt(searchID, 10);
     });
     if ( globalTag ) return globalTag.name;
@@ -86,7 +76,7 @@
   };
 
   IntercomApp.prototype.getTagID = function(searchName) {
-    var globalTag = _.find(this.tags, function(tag){
+    var globalTag = _.find(this.tags, function(tag) {
       return tag.name.toLowerCase() === searchName.toLowerCase();
     });
     if ( globalTag ) return globalTag.id;
@@ -94,7 +84,7 @@
   };
 
   IntercomApp.prototype.alreadyHasTag = function(searchID) {
-    var userTag = _.find(this.user.tags, function(tag){
+    var userTag = _.find(this.user.tags, function(tag) {
       return parseInt(tag.id, 10) === parseInt(searchID, 10);
     });
     return typeof userTag !== 'undefined';
@@ -110,7 +100,7 @@
     requests: {  // API call parameters
 
       getUserRequest: function() {
-        return this.app.ajaxParams( '/users/?email=' + this.ticket().requester().email() );
+        return this.app.ajaxParams( '/users/?email=' + this.app.user.email );
       },
 
       getTagsRequest: function() {
@@ -142,12 +132,32 @@
       'app.activated': function() {
         // Runs on load. Instantiate our object and show our default view
         this.app = new IntercomApp(this);
-        this.switchTo('account', { app: this.app });
+        this.trigger('init');
+      },
 
-        // Make the API calls asynchronously
-        this.ajax('getUserRequest');
-        this.ajax('getTagsRequest');
-        this.ajax('getSegmentsRequest');
+      'init': function() {
+        var user;
+
+        if ( typeof this.ticket === 'function' ) user = this.ticket().requester();
+        else if ( typeof this.user === 'function' ) user = this.user();
+
+        this.app.user.name = user.name() || '';
+        this.app.user.email = user.email();
+
+        if ( this.app.user.email ) {
+          this.switchTo('account', { app: this.app });
+
+          // Make the API calls asynchronously
+          this.ajax('getUserRequest');
+          this.ajax('getTagsRequest');
+          this.ajax('getSegmentsRequest');
+        } else {
+          this.switchTo('no-account', { app: this.app } );
+        }
+      },
+
+      'ticket.requester.email.changed': function() {
+        this.trigger('init');
       },
 
       'getUserRequest.done': function(user) {
@@ -184,20 +194,20 @@
         });
 
         // Filter out tags that weren't present on the global tag list
-        this.app.user.tags = _.filter(this.app.user.tags, function(tag){
-          return typeof tag.name !== 'undefined';
+        this.app.user.tags = _.filter(this.app.user.tags, function(tag) {
+          return typeof tag.name === 'string';
         });
 
         // Add segment names to user segments array
         _.each(this.app.user.segments, function(userSegment, key) {
-          var globalSegment = _.find(self.app.segments, function(segment){
+          var globalSegment = _.find(self.app.segments, function(segment) {
             return segment.id === userSegment.id;
           });
           if ( globalSegment ) userSegment.name = globalSegment.name;
         });
 
         // Filter out segments that weren't present on the global segment list
-        this.app.user.segments = _.filter(this.app.user.segments, function(segment){
+        this.app.user.segments = _.filter(this.app.user.segments, function(segment) {
           return typeof segment.name !== 'undefined';
         });
 

@@ -1,5 +1,8 @@
 <p>
-  No Intercom account found for the email address <em>{{app.user.email}}</em>
+  No Intercom account found
+  {{#if app.user.email}}
+    for the email address <em>{{app.user.email}}</em>
+  {{/if}}
 </p>
 
 <br />

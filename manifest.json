@@ -5,7 +5,11 @@
     "email": "mark@unbounce.com"
   },
   "frameworkVersion": "1.0",
-  "location": "ticket_sidebar",
+  "location": [
+    "ticket_sidebar",
+    "new_ticket_sidebar",
+    "user_sidebar"
+  ],
   "defaultLocale": "en",
   "private": true,
   "version": "0.7",
