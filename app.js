@@ -14,19 +14,18 @@
     });
   };
 
-  function IntercomApp(zendeskApp) {
-
-    this.$ = zendeskApp.$;
+  function IntercomApp(zd) {
+    this.zd = zd;
 
     // Endpoints
     this.apiRoot = 'https://{{setting.intercomAppID}}:{{setting.intercomAPIKey}}@api.intercom.io';
-    this.linkRoot = 'https://app.intercom.io/apps/' + zendeskApp.setting('intercomAppID') + '/users';
+    this.linkRoot = 'https://app.intercom.io/apps/' + zd.setting('intercomAppID') + '/users';
 
     // Default user data – used until actual data is returned from Intercom
     this.user = {
       userID: '',
-      name: zendeskApp.ticket().requester().name(),
-      email: zendeskApp.ticket().requester().email(),
+      name: zd.ticket().requester().name(),
+      email: zd.ticket().requester().email(),
       tags: [],
       segments: [],
       metadata: []
@@ -41,6 +40,17 @@
       dataType: 'json',
       secure: true
     };
+  };
+
+  IntercomApp.prototype.addTag = function(newTagID) {
+    if ( this.alreadyHasTag(newTagID) ) {
+      this.addTagCleanup();
+      return services.notify(this.user.name + ' already has the tag \'' +
+              this.getTagName(newTagID) + '\'.', 'error');
+    }
+
+    this.user.newTagID = newTagID;
+    this.zd.ajax('addTagRequest');
   };
 
   IntercomApp.prototype.filterMetadata = function(data){
@@ -75,6 +85,14 @@
     else return null;
   };
 
+  IntercomApp.prototype.getTagID = function(searchName) {
+    var globalTag = _.find(this.tags, function(tag){
+      return tag.name.toLowerCase() === searchName.toLowerCase();
+    });
+    if ( globalTag ) return globalTag.id;
+    else return null;
+  };
+
   IntercomApp.prototype.alreadyHasTag = function(searchID) {
     var userTag = _.find(this.user.tags, function(tag){
       return parseInt(tag.id, 10) === parseInt(searchID, 10);
@@ -83,7 +101,7 @@
   };
 
   IntercomApp.prototype.addTagCleanup = function() {
-    this.$('#new-tag').val('none');
+    this.zd.$('#new-tag').val('none');
     delete this.user.newTagID;
   };
 
@@ -193,19 +211,28 @@
         this.switchTo('no-account', { app: this.app });
       },
 
+      'ticket.custom_field_21359544.changed': function(data) {
+        // Fires when the 'Feature Interest' field is changed
+        var newFeatureInterest = this.ticket().customField('custom_field_21359544').replace(/feature_request_/, '').replace(/_/g, ' ');
+        var newTagName = 'Product - Feature Interest - ' + newFeatureInterest;
+        var newTagID = this.app.getTagID(newTagName);
+
+        if ( ! this.app.user.userID )
+          return services.notify('Intercom tag will not be tagged because ' +
+                                  'the requester was not found on Intercom.',
+                                  'alert');
+
+        if ( !newTagID )
+          return services.notify('Intercom user ' + this.app.user.name + ' ' +
+                                  'will not be tagged because there is no tag ' +
+                                  'called \'' + newTagName + '\'.', 'alert');
+
+        this.app.addTag(newTagID);
+      },
+
       'change #new-tag': function() {
         var newTagID = this.$('#new-tag').val();
-
-        if ( !newTagID || newTagID === 'none' ) return false;
-
-        if ( this.app.alreadyHasTag(newTagID) ) {
-          this.app.addTagCleanup();
-          return services.notify(this.app.user.name + ' already has the tag \'' +
-                  this.app.getTagName(newTagID) + '\'.', 'error');
-        }
-
-        this.app.user.newTagID = newTagID;
-        this.ajax('addTag');
+        this.app.addTag(newTagID);
       },
 
       'addTagRequest.done': function(data) {
@@ -218,8 +245,8 @@
           return this.trigger('addTagRequest.fail');
 
         // Success
-        services.notify('Successfully added tag \'' +
-                        data.name + '\' to ' + this.app.user.name + '.');
+        services.notify('Added tag \'' + data.name + '\' to ' +
+                        this.app.user.name + '.');
         this.app.user.tags.push( data );
         this.switchTo('account', { app: this.app }); // Refresh the view
       },
