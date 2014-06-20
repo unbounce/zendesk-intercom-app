@@ -14,7 +14,7 @@
 
 <dl id="tags">
   {{#app.user.tags}}
-    <dd>
+    <dd id="tag-{{id}}">
       <a href="{{../app.linkRoot}}/?search=tag:{{name}}" title="{{name}}" target="_blank">
         {{name}}
       </a>

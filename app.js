@@ -35,6 +35,14 @@
   IntercomApp.prototype.addTag = function(newTagID) {
     if ( this.alreadyHasTag(newTagID) ) {
       this.addTagCleanup();
+
+      // Highlight the pre-existing tab
+      this.zd.$('#tags dd#tag-' + newTagID).css('background-color', '#F5F5D3');
+      var self = this;
+      setTimeout(function () {
+        self.zd.$('#tags dd#tag-' + newTagID).css('background-color', 'white');
+      }, 5000);
+
       return services.notify(this.user.name + ' already has the tag \'' +
               this.getTagName(newTagID) + '\'.', 'error');
     }
