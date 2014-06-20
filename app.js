@@ -91,19 +91,19 @@
 
     requests: {  // API call parameters
 
-      getUser: function() {
+      getUserRequest: function() {
         return this.app.ajaxParams( '/users/?email=' + this.ticket().requester().email() );
       },
 
-      getTags: function() {
+      getTagsRequest: function() {
         return this.app.ajaxParams( '/tags' );
       },
 
-      getSegments: function() {
+      getSegmentsRequest: function() {
         return this.app.ajaxParams( '/segments' );
       },
 
-      addTag: function() {
+      addTagRequest: function() {
         if ( this.app.user.newTagID ) return {
           url: this.app.apiRoot + '/tags',
           type: 'POST',
@@ -127,12 +127,12 @@
         this.switchTo('account', { app: this.app });
 
         // Make the API calls asynchronously
-        this.ajax('getUser');
-        this.ajax('getTags');
-        this.ajax('getSegments');
+        this.ajax('getUserRequest');
+        this.ajax('getTagsRequest');
+        this.ajax('getSegmentsRequest');
       },
 
-      'getUser.done': function(user) {
+      'getUserRequest.done': function(user) {
         this.app.user = {
           userID: user.user_id,
           name: user.name.toTitleCase(),
@@ -141,27 +141,23 @@
           segments: user.segments.segments,
           metadata: this.app.filterMetadata(user.custom_attributes)
         };
-        this.trigger('oneCallDone');
+        this.trigger('requestDone');
       },
 
-      'getTags.done': function(tags) {
+      'getTagsRequest.done': function(tags) {
         this.app.tags = tags.tags || [];
-        this.trigger('oneCallDone');
+        this.trigger('requestDone');
       },
 
-      'getSegments.done': function(segments) {
+      'getSegmentsRequest.done': function(segments) {
         this.app.segments = segments.segments || [];
-        this.trigger('oneCallDone');
+        this.trigger('requestDone');
       },
 
-      'oneCallDone': function() {
-        if ( this.app.user.userID && this.app.tags && this.app.segments)
-          this.trigger('allCallsDone');
-      },
+      'requestDone': function() {
+        if ( !this.app.user.userID || !this.app.tags || !this.app.segments ) return false;
 
-      'allCallsDone': function() {
         // Callback when *all* Ajax requests are complete
-
         var self = this;
 
         // Add tag names to user tags array
@@ -192,7 +188,7 @@
         this.switchTo('account', { app: this.app });
       },
 
-      'getUser.fail': function() {
+      'getUserRequest.fail': function() {
         // Show the 'no account' message and search box
         this.switchTo('no-account', { app: this.app });
       },
@@ -212,14 +208,14 @@
         this.ajax('addTag');
       },
 
-      'addTag.done': function(data) {
+      'addTagRequest.done': function(data) {
         console.log('Adding tag returned', data);
 
         this.app.addTagCleanup();
 
         // Fail
         if ( data.errors || typeof data !== 'object' )
-          return this.trigger('addTag.fail');
+          return this.trigger('addTagRequest.fail');
 
         // Success
         services.notify('Successfully added tag \'' +
@@ -228,7 +224,7 @@
         this.switchTo('account', { app: this.app }); // Refresh the view
       },
 
-      'addTag.fail': function() {
+      'addTagRequest.fail': function() {
         services.notify('Failed to add tag \'' +
                         this.app.getTagName(this.app.user.newTagID) +
                         '\' to ' + this.app.user.name + '.', 'error');
