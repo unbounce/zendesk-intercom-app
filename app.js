@@ -162,8 +162,9 @@
 
       'getUserRequest.done': function(user) {
         this.app.user = {
+          receivedFromIntercom: true,
           userID: user.user_id,
-          name: user.name.toTitleCase(),
+          name: user.name ? user.name.toTitleCase() : this.app.user.name,
           email: user.email,
           tags: user.tags.tags,
           segments: user.segments.segments,
@@ -183,7 +184,7 @@
       },
 
       'requestDone': function() {
-        if ( !this.app.user.userID || !this.app.tags || !this.app.segments ) return false;
+        if ( !this.app.user.receivedFromIntercom || !this.app.tags || !this.app.segments ) return false;
 
         // Callback when *all* Ajax requests are complete
         var self = this;
