@@ -3,8 +3,7 @@ dl#segments{
   margin-left: -3px;
 }
 
-dl#metadata,
-div#add-tag{
+dl#metadata{
   clear: both;
   padding-top: 5px;
 }
@@ -23,27 +22,25 @@ dl#metadata dt{
   text-overflow: ellipsis;
 }
 
-div#add-tag select{
-  max-width: 100%;
-}
-
-dl#metadata dd{
-  margin-left: 10em;
+dl#tags dd,
+dl#tags select#new-tag,
+dl#segments dd{
+  box-sizing: border-box;
+  float: left;
+  height: 20px;
+  margin: 2px;
+  border: 1px solid #d8d8d8;
+  font-size: 10px;
+  border-radius: 8px;
 }
 
 dl#tags dd,
 dl#segments dd{
-  float: left;
-  border: 1px solid #d8d8d8;
-  margin: 2px;
   padding: 0 6px 0 19px;
-  height: 18px;
-  font-size: 10px;
-  border-radius: 8px;
   background-repeat: no-repeat;
   background-size: 10px;
   background-position: 5px 4px;
-  max-width: 130px;
+  max-width: 155px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -53,8 +50,21 @@ dl#tags dd{
   background-image: app-asset-url('tag.png');
 }
 
+dl#tags select#new-tag{
+  max-width: 90px;
+}
+
 dl#segments dd{
   background-image: app-asset-url('segment.png');
+}
+
+dl#tags dd a,
+dl#segments dd a{
+  color: black;
+}
+
+dl#metadata dd{
+  margin-left: 10em;
 }
 
 .btn{
