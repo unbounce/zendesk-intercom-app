@@ -16,6 +16,8 @@
 
   function IntercomApp(zendeskApp) {
 
+    this.$ = zendeskApp.$;
+
     // Endpoints
     this.apiRoot = 'https://{{setting.intercomAppID}}:{{setting.intercomAPIKey}}@api.intercom.io';
     this.linkRoot = 'https://app.intercom.io/apps/' + zendeskApp.setting('intercomAppID') + '/users';
@@ -63,6 +65,26 @@
       }
     });
     return metadata;
+  };
+
+  IntercomApp.prototype.getTagName = function(searchID) {
+    var globalTag = _.find(this.tags, function(tag){
+      return parseInt(tag.id, 10) === parseInt(searchID, 10);
+    });
+    if ( globalTag ) return globalTag.name;
+    else return null;
+  };
+
+  IntercomApp.prototype.alreadyHasTag = function(searchID) {
+    var userTag = _.find(this.user.tags, function(tag){
+      return parseInt(tag.id, 10) === parseInt(searchID, 10);
+    });
+    return typeof userTag !== 'undefined';
+  };
+
+  IntercomApp.prototype.addTagCleanup = function() {
+    this.$('#new-tag').val('none');
+    delete this.user.newTagID;
   };
 
   return {
@@ -146,10 +168,7 @@
 
         // Add tag names to user tags array
         _.each(this.app.user.tags, function(userTag) {
-          var globalTag = _.find(self.app.tags, function(tag){
-            return parseInt(tag.id, 10) === parseInt(userTag.id, 10);
-          });
-          if ( globalTag ) userTag.name = globalTag.name;
+          userTag.name = self.app.getTagName(userTag.id);
         });
 
         // Filter out tags that weren't present on the global tag list
@@ -180,29 +199,43 @@
         this.switchTo('no-account', { app: this.app });
       },
 
-      'change #add-tag': function() {
-        services.notify('Adding tag...');
-        if ( !this.$('#new-tag').val() || this.$('#new-tag').val() === 'none' ) return false;
-        this.app.user.newTag = this.$('#new-tag').val();
         console.log('New tag to be added', this.app.user.newTag);
+      'change #new-tag': function() {
+        var newTagID = this.$('#new-tag').val();
+
+        if ( !newTagID || newTagID === 'none' ) return false;
+
+        if ( this.app.alreadyHasTag(newTagID) ) {
+          this.app.addTagCleanup();
+          return services.notify(this.app.user.name + ' already has the tag \'' +
+                  this.app.getTagName(newTagID) + '\'.', 'error');
+        }
+
+        this.app.user.newTagID = newTagID;
         this.ajax('addTag');
       },
 
       'addTag.done': function(data) {
+        console.log('Adding tag returned', data);
+
+        this.app.addTagCleanup();
+
         // Fail
-        if ( data.errors ) return this.trigger('addTag.fail');
+        if ( data.errors || typeof data !== 'object' )
+          return this.trigger('addTag.fail');
 
         // Success
-        services.notify('Successfully added tag ' + this.app.user.newTag + ' to ' + this.app.user.name);
-        this.trigger('app.activated');
-
-        // Cleanup
-        this.$('#new-tag').val('none');
-        delete this.app.user.newTag;
+        services.notify('Successfully added tag \'' +
+                        data.name + '\' to ' + this.app.user.name + '.');
+        this.app.user.tags.push( data );
+        this.switchTo('account', { app: this.app }); // Refresh the view
       },
 
       'addTag.fail': function() {
-        services.notify('Failed to add tag to ' + this.app.user.name);
+        services.notify('Failed to add tag \'' +
+                        this.app.getTagName(this.app.user.newTagID) +
+                        '\' to ' + this.app.user.name + '.', 'error');
+        this.app.addTagCleanup();
       }
     }
 

@@ -20,6 +20,17 @@
       </a>
     </dd>
   {{/app.user.tags}}
+
+  {{#if app.user.userID}}
+    <form name="add-tag-form">
+      <select name="new-tag" id="new-tag">
+        <option value="none" selected>Add a tag...</option>
+        {{#app.tags}}
+          <option value="{{id}}">{{name}}</option>
+        {{/app.tags}}
+      </select>
+    </form>
+  {{/if}}
 </dl>
 
 <dl id="metadata">
@@ -28,14 +39,3 @@
     <dd>{{value}}</dd>
   {{/app.user.metadata}}
 </dl>
-
-<div id="add-tag">
-  <form name="add-tag-form">
-    <select name="new-tag" id="new-tag">
-      <option value="none" selected>Add a tag to user...</option>
-      {{#app.tags}}
-        <option value="{{id}}">{{name}}</option>
-      {{/app.tags}}
-    </select>
-  </form>
-</div>
