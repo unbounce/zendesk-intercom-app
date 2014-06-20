@@ -56,7 +56,7 @@
 
         // Custom field displays
         if ( field === 'pages' ) value = value + ' (' + data['published pages'] + ' published)';
-        if ( field === 'marketer' ) value = value.toTitleCase();
+        if ( field === 'marketer' ) value = value.replace(/_/g, ' ').toTitleCase();
 
         metadata.push({
           field: field.replace(/_/g, ' ').toTitleCase(),
