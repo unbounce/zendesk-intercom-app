@@ -23,34 +23,6 @@
     this.linkRoot = 'https://app.intercom.io/apps/' + zd.setting('intercomAppID') + '/users';
   }
 
-  IntercomApp.prototype.ajaxParams = function(url) {
-    return {
-      url: this.apiRoot + url,
-      type: 'GET',
-      dataType: 'json',
-      secure: true
-    };
-  };
-
-  IntercomApp.prototype.addTag = function(newTagID) {
-    if ( this.alreadyHasTag(newTagID) ) {
-      this.addTagCleanup();
-
-      // Highlight the pre-existing tab
-      this.zd.$('#tags dd#tag-' + newTagID).css('background-color', '#F5F5D3');
-      var self = this;
-      setTimeout(function () {
-        self.zd.$('#tags dd#tag-' + newTagID).css('background-color', 'white');
-      }, 5000);
-
-      return services.notify(this.user.name + ' already has the tag \'' +
-              this.getTagName(newTagID) + '\'.', 'error');
-    }
-
-    this.user.newTagID = newTagID;
-    this.zd.ajax('addTagRequest');
-  };
-
   IntercomApp.prototype.filterMetadata = function(data) {
     // Intercom metadata fields to display
     var fields = ['phone', 'marketer', 'current LP solution', 'pages', 'domains',
@@ -75,27 +47,41 @@
     return metadata;
   };
 
-  IntercomApp.prototype.getTagName = function(searchID) {
-    var globalTag = _.find(this.tags, function(tag) {
-      return parseInt(tag.id, 10) === parseInt(searchID, 10);
+  IntercomApp.prototype.findTag = function(search, attr) {
+    // Search for global tags by ID or name
+    var result = _.find(this.tags, function(tag) {
+      if ( search.id ) return parseInt(tag.id, 10) === parseInt(search.id, 10);
+      if ( search.name ) return tag.name.toLowerCase() === search.name.toLowerCase();
     });
-    if ( globalTag ) return globalTag.name;
-    else return null;
+    if ( result && result[attr] ) return result[attr];
+    else return result;
   };
 
-  IntercomApp.prototype.getTagID = function(searchName) {
-    var globalTag = _.find(this.tags, function(tag) {
-      return tag.name.toLowerCase() === searchName.toLowerCase();
-    });
-    if ( globalTag ) return globalTag.id;
-    else return null;
+  IntercomApp.prototype.addTag = function(newTagID) {
+    // Check if the user already has this tag
+    if ( this.userHasTag(newTagID) ) {
+      this.addTagCleanup();
+
+      // Highlight the pre-existing tag
+      this.zd.$('#tags dd#tag-' + newTagID).css('background-color', '#F5F5D3');
+      var self = this;
+      setTimeout(function () {
+        self.zd.$('#tags dd#tag-' + newTagID).css('background-color', 'white');
+      }, 5000);
+
+      return services.notify(this.user.name + ' already has the tag <b>' +
+              this.findTag({id: newTagID}, 'name') + '</b>.',
+              'error');
+    }
+
+    this.user.newTagID = newTagID;
+    this.zd.ajax('addTagRequest');
   };
 
-  IntercomApp.prototype.alreadyHasTag = function(searchID) {
-    var userTag = _.find(this.user.tags, function(tag) {
+  IntercomApp.prototype.userHasTag = function(searchID) {
+    return typeof _.find(this.user.tags, function(tag) {
       return parseInt(tag.id, 10) === parseInt(searchID, 10);
-    });
-    return typeof userTag !== 'undefined';
+    }) !== 'undefined';
   };
 
   IntercomApp.prototype.addTagCleanup = function() {
@@ -103,34 +89,47 @@
     delete this.user.newTagID;
   };
 
+  IntercomApp.prototype.ajaxParamsGET = function(url) {
+    return {
+      url: this.apiRoot + url,
+      type: 'GET',
+      dataType: 'json',
+      secure: true
+    };
+  };
+
+  IntercomApp.prototype.ajaxParamsPOST = function(url, data) {
+    return {
+      url: this.apiRoot + url,
+      type: 'POST',
+      dataType: 'json',
+      contentType: 'application/json',
+      secure: true,
+      data: JSON.stringify(data)
+    };
+  };
+
   return {
 
     requests: {  // API call parameters
 
       getUserRequest: function() {
-        return this.app.ajaxParams( '/users/?email=' + this.app.user.email );
+        return this.app.ajaxParamsGET('/users/?email=' + this.app.user.email);
       },
 
-      getTagsRequest: function() {
-        return this.app.ajaxParams( '/tags' );
+      findTagsRequest: function() {
+        return this.app.ajaxParamsGET('/tags');
       },
 
       getSegmentsRequest: function() {
-        return this.app.ajaxParams( '/segments' );
+        return this.app.ajaxParamsGET('/segments');
       },
 
       addTagRequest: function() {
-        if ( this.app.user.newTagID ) return {
-          url: this.app.apiRoot + '/tags',
-          type: 'POST',
-          dataType: 'json',
-          contentType: 'application/json',
-          secure: true,
-          data: JSON.stringify({
-            id: this.app.user.newTagID,
-            users: [ { user_id: this.app.user.userID } ]
-          })
-        };
+        return this.app.ajaxParamsPOST('/tags', {
+          id: this.app.user.newTagID,
+          users: [ { user_id: this.app.user.userID } ]
+        });
       }
 
     },
@@ -149,15 +148,16 @@
         if ( typeof this.ticket === 'function' ) user = this.ticket().requester();
         else if ( typeof this.user === 'function' ) user = this.user();
 
-        this.app.user.name = user.name() || '';
-        this.app.user.email = user.email();
+        if ( user && user.email() ) {
 
-        if ( this.app.user.email ) {
+          this.app.user.email = user.email();
+          if ( user.name() ) this.app.user.name = user.name();
+
           this.switchTo('account', { app: this.app });
 
           // Make the API calls asynchronously
           this.ajax('getUserRequest');
-          this.ajax('getTagsRequest');
+          this.ajax('findTagsRequest');
           this.ajax('getSegmentsRequest');
         } else {
           this.switchTo('no-account', { app: this.app } );
@@ -165,6 +165,10 @@
       },
 
       'ticket.requester.email.changed': function() {
+        this.trigger('init');
+      },
+
+      'ticket.requester.name.changed': function() {
         this.trigger('init');
       },
 
@@ -181,7 +185,7 @@
         this.trigger('requestDone');
       },
 
-      'getTagsRequest.done': function(tags) {
+      'findTagsRequest.done': function(tags) {
         this.app.tags = tags.tags || [];
         this.trigger('requestDone');
       },
@@ -192,14 +196,15 @@
       },
 
       'requestDone': function() {
-        if ( !this.app.user.receivedFromIntercom || !this.app.tags || !this.app.segments ) return false;
+        if ( !this.app.user.receivedFromIntercom || !this.app.tags ||
+             !this.app.segments ) return false;
 
         // Callback when *all* Ajax requests are complete
         var self = this;
 
         // Add tag names to user tags array
         _.each(this.app.user.tags, function(userTag) {
-          userTag.name = self.app.getTagName(userTag.id);
+          userTag.name = self.app.findTag({id: userTag.id}, 'name') + ' ';
         });
 
         // Filter out tags that weren't present on the global tag list
@@ -240,15 +245,16 @@
         if ( !data[0] || !this.ticket().customField('custom_field_21359544') )
            return false;
 
+        var newTagName = 'Product - Feature Interest - ' +
+                            this.ticket().customField('custom_field_21359544')
+                            .replace(/feature_request_/, '').replace(/_/g, ' ');
+
         // Don't tag if there isn't an associated Intercom user
         if ( !this.app.user.userID )
           return services.notify('Intercom user will not be tagged because ' +
             'the requester was not found on Intercom.', 'alert');
 
         // Check whether a corresponding Intercom tag exists
-        var newTagName = 'Product - Feature Interest - ' +
-                            this.ticket().customField('custom_field_21359544')
-                            .replace(/feature_request_/, '').replace(/_/g, ' ');
         var newTagID = this.app.findTag({name: newTagName}, 'id');
 
         if ( !newTagID )
@@ -256,6 +262,7 @@
                                   'will not be tagged because there is no tag ' +
                                   'called \'' + newTagName + '\'.', 'alert');
 
+        // Tag the user
         this.app.addTag(newTagID);
       },
 
