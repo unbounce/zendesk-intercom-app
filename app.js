@@ -232,17 +232,24 @@
 
       // This will auto-tag the user with a Feature Interest tag whenever a
       // feature is chosen from the 'Feature Interest' custom field dropdown
-      //     e.g. selecting 'feature_interest_responsive'
-      //     adds tag 'Product - Feature Request - Responsive'
+      //   e.g. selecting 'feature_interest_responsive'
+      //   adds tag 'Product - Feature Request - Responsive'
       'ticket.custom_field_21359544.changed': function(data) {
-        var newFeatureInterest = this.ticket().customField('custom_field_21359544').replace(/feature_request_/, '').replace(/_/g, ' ');
-        var newTagName = 'Product - Feature Interest - ' + newFeatureInterest;
-        var newTagID = this.app.getTagID(newTagName);
 
-        if ( ! this.app.user.userID )
-          return services.notify('Intercom tag will not be tagged because ' +
-                                  'the requester was not found on Intercom.',
-                                  'alert');
+        // Only tag if the feature interest has actually changed
+        if ( !data[0] || !this.ticket().customField('custom_field_21359544') )
+           return false;
+
+        // Don't tag if there isn't an associated Intercom user
+        if ( !this.app.user.userID )
+          return services.notify('Intercom user will not be tagged because ' +
+            'the requester was not found on Intercom.', 'alert');
+
+        // Check whether a corresponding Intercom tag exists
+        var newTagName = 'Product - Feature Interest - ' +
+                            this.ticket().customField('custom_field_21359544')
+                            .replace(/feature_request_/, '').replace(/_/g, ' ');
+        var newTagID = this.app.findTag({name: newTagName}, 'id');
 
         if ( !newTagID )
           return services.notify('Intercom user ' + this.app.user.name + ' ' +
