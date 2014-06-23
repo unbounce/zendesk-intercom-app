@@ -251,16 +251,21 @@
 
         // Don't tag if there isn't an associated Intercom user
         if ( !this.app.user.userID )
-          return services.notify('Intercom user will not be tagged because ' +
-            'the requester was not found on Intercom.', 'alert');
+          return services.notify('User will not be tagged with <b>' +
+            newTagName.toTitleCase() + '</b>, because \'' + this.app.user.name +
+            '\' was not found on Intercom.<br /><br /><a href="' +
+            this.app.linkRoot + '/?search=' + encodeURI(this.app.user.name) + '">' +
+            'Click here to search for them.</a>', 'alert');
 
         // Check whether a corresponding Intercom tag exists
         var newTagID = this.app.findTag({name: newTagName}, 'id');
 
         if ( !newTagID )
-          return services.notify('Intercom user ' + this.app.user.name + ' ' +
-                                  'will not be tagged because there is no tag ' +
-                                  'called \'' + newTagName + '\'.', 'alert');
+          return services.notify('Intercom user will not be tagged because ' +
+            'there is no tag <b>' + newTagName.toTitleCase() + '</b>.' +
+            '<br /><br />To add a new tag, <a href="' + this.app.linkRoot +
+            '/show?email=' + this.app.user.email + '">go to Intercom</a>.',
+            'alert');
 
         // Tag the user
         this.app.addTag(newTagID);
@@ -272,7 +277,7 @@
       },
 
       'addTagRequest.done': function(data) {
-        console.log('Adding tag returned', data);
+        console.log('Adding tag', data);
 
         this.app.addTagCleanup();
 
@@ -281,16 +286,16 @@
           return this.trigger('addTagRequest.fail');
 
         // Success
-        services.notify('Added tag \'' + data.name + '\' to ' +
+        services.notify('Added tag <b>' + data.name + '</b> to ' +
                         this.app.user.name + '.');
         this.app.user.tags.push( data );
         this.switchTo('account', { app: this.app }); // Refresh the view
       },
 
       'addTagRequest.fail': function() {
-        services.notify('Failed to add tag \'' +
-                        this.app.getTagName(this.app.user.newTagID) +
-                        '\' to ' + this.app.user.name + '.', 'error');
+        var tagName = this.app.findTag({id: this.app.user.newTagID} || '';
+        services.notify('Failed to add tag <b>' + tagName + '</b> to ' +
+        this.app.user.name + '</b>.', 'error');
         this.app.addTagCleanup();
       }
     }
