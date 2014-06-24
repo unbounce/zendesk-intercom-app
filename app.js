@@ -204,7 +204,7 @@
 
         // Add tag names to user tags array
         _.each(this.app.user.tags, function(userTag) {
-          userTag.name = self.app.findTag({id: userTag.id}, 'name') + ' ';
+          userTag.name = self.app.findTag({id: userTag.id}, 'name');
         });
 
         // Filter out tags that weren't present on the global tag list
@@ -293,7 +293,7 @@
       },
 
       'addTagRequest.fail': function() {
-        var tagName = this.app.findTag({id: this.app.user.newTagID} || '';
+        var tagName = this.app.findTag({id: this.app.user.newTagID}) || '';
         services.notify('Failed to add tag <b>' + tagName + '</b> to ' +
         this.app.user.name + '</b>.', 'error');
         this.app.addTagCleanup();
