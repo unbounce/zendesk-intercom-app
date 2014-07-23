@@ -8,6 +8,7 @@ A [Zendesk](http://www.zendesk.com) app (widget) that links to the ticket reques
 
 2. Create a ZIP archive of the app files. You can automate this by running: 
     ```shell
+    npm install -g grunt-cli
     npm install
     grunt
     ``` 
