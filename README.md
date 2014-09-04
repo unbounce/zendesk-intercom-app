@@ -4,14 +4,14 @@ A [Zendesk](http://www.zendesk.com) app (widget) that links to the ticket reques
 
 ## Build and deploy
 
-1. Edit `app.js` and add the Intercom custom attributes you wish to display, around line 37.
+1. Edit `app.js` and add the Intercom custom attributes you wish to display, around line 28.
 
-2. Create a ZIP archive of the app files. You can automate this by running: 
+2. Create a ZIP archive of the app files. You can automate this by running:
     ```shell
     npm install -g grunt-cli
     npm install
     grunt
-    ``` 
+    ```
 
 3. In Zendesk, create a new app and upload the ZIP. ([See these instructions from Zendesk.](http://developer.zendesk.com/documentation/apps/uploading.html) You'll need to be an admin on your Zendesk account.)
 
