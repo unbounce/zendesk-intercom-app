@@ -35,7 +35,7 @@
 
 <dl id="metadata">
   {{#app.user.metadata}}
-    <dt>{{field}}</dt>
-    <dd>{{value}}</dd>
+    <dt title="{{field}}">{{field}}</dt>
+    <dd title="{{value}}">{{value}}</dd>
   {{/app.user.metadata}}
 </dl>

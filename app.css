@@ -14,7 +14,7 @@ dl dt{
 
 dl#metadata dt{
   clear: left;
-  max-width: 9em;
+  max-width: 11em;
   color: #8F8F8F;
   font-weight: normal;
   overflow: hidden;
@@ -64,7 +64,7 @@ dl#segments dd a{
 }
 
 dl#metadata dd{
-  margin-left: 10em;
+  margin-left: 11em;
 }
 
 .btn{

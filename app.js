@@ -25,8 +25,21 @@
 
   IntercomApp.prototype.filterMetadata = function(data) {
     // Intercom metadata fields to display
-    var fields = ['phone', 'marketer', 'current LP solution', 'pages', 'domains',
-                    'clients', 'api keys'];
+    var fields = [
+      'phone',
+      'marketer',
+      'current LP solution',
+      'pages',
+      'domains',
+      'clients',
+      'api keys',
+      'NPS - CS - 1month',
+      'NPS - CS - 6month',
+      'NPS - CS - Support',
+      'NPS - Product - 1month',
+      'NPS - Product - 6month',
+      'NPS - Product - Support'
+    ];
 
     // Store those fields in array
     var metadata = [];
@@ -37,6 +50,7 @@
         // Custom field displays
         if ( field === 'pages' ) value = value + ' (' + data['published pages'] + ' published)';
         if ( field === 'marketer' ) value = value.replace(/_/g, ' ').toTitleCase();
+        if ( field.indexOf('NPS') > -1 ) value = value + ' / 10';
 
         metadata.push({
           field: field.replace(/_/g, ' ').toTitleCase(),
