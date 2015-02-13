@@ -196,6 +196,15 @@
           segments: user.segments.segments,
           metadata: this.app.filterMetadata(user.custom_attributes)
         };
+
+        // Add location information
+        if ( this.app.user.metadata && user.location_data && user.location_data.city_name && user.location_data.region_name ) {
+          this.app.user.metadata.unshift({
+            field: 'Location',
+            value: user.location_data.city_name + ', ' + user.location_data.region_name
+          });
+        }
+
         this.trigger('requestDone');
       },
 

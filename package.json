@@ -1,6 +1,6 @@
 {
   "name": "zendesk-intercom-app",
-  "version": "0.8.3",
+  "version": "0.9",
   "author": "Mark Wainwright <mark@unbounce.com>",
   "devDependencies": {
     "grunt": "^0.4.5",
